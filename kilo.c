@@ -827,6 +827,27 @@ writeerr:
     return 1;
 }
 
+/* Encrypt the writed text */
+int encryptFile(void) {
+    editorSave();
+    char command[100];
+    strcpy(command, "gpg --output ");
+    strcat(command, E.filename);
+    strcat(command, ".gpg ");
+    strcat(command, "--encrypt --recipient Becher.Jannik@gmail.com ");
+    strcat(command, E.filename);
+    if (system(command) != 0) {
+        editorSetStatusMessage("Can't encrypt file! Error: %s", strerror(errno));
+	return 1;
+    }
+    if (unlink(E.filename) != 0) {
+	    editorSetStatusMessage("Can't delete file after encryption! Error: %s", strerror(errno));
+	    return 1;
+    }
+
+    return 0;
+}
+
 /* ============================= Terminal update ============================ */
 
 /* We define a very simple "append buffer" structure, that is an heap
@@ -1185,7 +1206,8 @@ void editorProcessKeypress(int fd) {
         exit(0);
         break;
     case CTRL_S:        /* Ctrl-s */
-        editorSave();
+        //editorSave();
+	encryptFile();
         break;
     case CTRL_F:
         editorFind(fd);
