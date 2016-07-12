@@ -47,6 +47,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
@@ -1275,14 +1276,22 @@ void initEditor(void) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        fprintf(stderr,"Usage: kilo <filename>\n");
-        exit(1);
+
+    // TODO: fix buffer overflow error
+    char filename[100];
+    if (argc == 2) {
+
+        strncpy(filename, argv[1], strlen(argv[1]));
+    } else {
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);
+
+	strftime(filename, sizeof(filename)-1, "%d_%m_%Y_%H:%M", t);
     }
 
     initEditor();
-    editorSelectSyntaxHighlight(argv[1]);
-    editorOpen(argv[1]);
+    editorSelectSyntaxHighlight(filename);
+    editorOpen(filename);
     enableRawMode(STDIN_FILENO);
     editorSetStatusMessage(
         "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
