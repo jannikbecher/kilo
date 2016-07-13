@@ -1,3 +1,5 @@
 #!/bin/sh
 
 gpg --output ${1%.*} --decrypt $1
+cat ${1%.*}
+rm -f ${1%.*}
