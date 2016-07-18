@@ -98,6 +98,7 @@ struct editorConfig {
     int screenrows; /* Number of rows that we can show */
     int screencols; /* Number of cols that we can show */
     int numrows;    /* Number of rows */
+    int numwords;   /* Number of words in file */
     int rawmode;    /* Is terminal raw mode enabled? */
     erow *row;      /* Rows */
     int dirty;      /* File modified but not saved. */
@@ -684,6 +685,9 @@ void editorInsertChar(int c) {
     int filecol = E.coloff+E.cx;
     erow *row = (filerow >= E.numrows) ? NULL : &E.row[filerow];
 
+    if (isspace(c))
+        E.numwords++;
+
     /* If the row where the cursor is currently located does not exist in our
      * logical representaion of the file, add enough empty rows as needed. */
     if (!row) {
@@ -952,8 +956,8 @@ void editorRefreshScreen(void) {
     abAppend(&ab,"\x1b[0K",4);
     abAppend(&ab,"\x1b[7m",4);
     char status[80], rstatus[80];
-    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
-        E.filename, E.numrows, E.dirty ? "(modified)" : "");
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines - %d words %s",
+        E.filename, E.numrows, E.numwords, E.dirty ? "(modified)" : "");
     int rlen = snprintf(rstatus, sizeof(rstatus),
         "%d/%d",E.rowoff+E.cy+1,E.numrows);
     if (len > E.screencols) len = E.screencols;
@@ -1262,6 +1266,7 @@ void initEditor(void) {
     E.rowoff = 0;
     E.coloff = 0;
     E.numrows = 0;
+    E.numwords = 0;
     E.row = NULL;
     E.dirty = 0;
     E.filename = NULL;
